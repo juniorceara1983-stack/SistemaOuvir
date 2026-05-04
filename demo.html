@@ -137,6 +137,12 @@
     <label for="nome">Nome completo</label>
     <input id="nome" type="text" placeholder="Digite seu nome" />
 
+    <label for="cpf" style="margin-top:12px; display:block">CPF</label>
+    <input id="cpf" type="text" placeholder="000.000.000-00" maxlength="14" />
+
+    <label for="telefone" style="margin-top:12px; display:block">Telefone / Celular</label>
+    <input id="telefone" type="tel" placeholder="(00) 00000-0000" maxlength="15" />
+
     <label for="email" style="margin-top:12px; display:block">E-mail</label>
     <input id="email" type="email" placeholder="seu@email.com" />
 
@@ -158,6 +164,12 @@
     <strong>ℹ️ Como testar:</strong> No desktop, mova o mouse lentamente sobre cada elemento
     e espere 100 ms – o navegador lerá o elemento em voz alta.
     No celular, arraste o dedo pela tela.
+    <br><br>
+    <strong>📝 Confirmação de campos:</strong> Preencha um campo do formulário (nome, CPF, telefone etc.)
+    e <strong>clique fora</strong> (ou pressione Tab). O sistema lerá em voz alta o que você digitou
+    e perguntará "Está correto?". Campos numéricos (CPF, telefone, CEP) têm cada dígito lido
+    individualmente para facilitar a conferência. Para <code>&lt;select&gt;</code>, a opção escolhida
+    é anunciada imediatamente.
     <br><br>
     Certifique-se de que o volume do dispositivo está ativado e que o navegador
     tem permissão para reproduzir áudio.

@@ -148,6 +148,95 @@
     }
   }
 
+  // ─── Confirmação de campos de formulário ──────────────────────────────────
+
+  /**
+   * Detecta o tipo semântico do campo com base em id, name, placeholder e label.
+   * Retorna: 'cpf' | 'cnpj' | 'telefone' | 'cep' | 'text'
+   */
+  function detectFieldType(input) {
+    var attrs = [
+      input.id || '',
+      input.name || '',
+      (input.getAttribute('placeholder') || ''),
+      (input.getAttribute('aria-label') || ''),
+      (getAssociatedLabelText(input) || '')
+    ].join(' ').toLowerCase();
+
+    if (/\bcpf\b/.test(attrs)) return 'cpf';
+    if (/\bcnpj\b/.test(attrs)) return 'cnpj';
+    if (/telefone|celular|whatsapp|\bfone\b|\btel\b|\bphone\b/.test(attrs)) return 'telefone';
+    if (/\bcep\b/.test(attrs)) return 'cep';
+    return 'text';
+  }
+
+  /**
+   * Converte o valor digitado em texto otimizado para fala.
+   * Campos de código numérico têm seus dígitos separados por espaço
+   * para que a síntese leia cada algarismo individualmente.
+   */
+  function formatValueForSpeech(value, fieldType) {
+    if (!value || !value.trim()) return null;
+
+    if (fieldType === 'text') return value.trim();
+
+    // Para CPF, CNPJ, telefone e CEP: lê apenas os dígitos um a um
+    var digits = value.replace(/\D/g, '');
+    if (!digits) return value.trim();
+    return digits.split('').join(' ');
+  }
+
+  /**
+   * Retorna o rótulo humano de um input (label > aria-label > placeholder > 'campo').
+   */
+  function getFieldLabel(input) {
+    return getAssociatedLabelText(input) ||
+           input.getAttribute('aria-label') ||
+           input.getAttribute('placeholder') ||
+           'campo';
+  }
+
+  /**
+   * Chamado quando o usuário sai de um campo de texto preenchido.
+   * Lê em voz alta: "<rótulo>: <valor>. Está correto?"
+   */
+  function handleInputBlur(event) {
+    var input = event.target;
+    if (!input || (input.tagName.toLowerCase() !== 'input' && input.tagName.toLowerCase() !== 'textarea')) return;
+
+    var inputType = (input.getAttribute('type') || 'text').toLowerCase();
+    // Não lê botões nem campos de senha
+    if (inputType === 'submit' || inputType === 'button' || inputType === 'reset' || inputType === 'password') return;
+
+    var value = input.value;
+    if (!value || !value.trim()) return;
+
+    var fieldType = detectFieldType(input);
+    var label = getFieldLabel(input);
+    var formatted = formatValueForSpeech(value, fieldType);
+    if (!formatted) return;
+
+    speak(label + ': ' + formatted + '. Está correto?');
+  }
+
+  /**
+   * Chamado quando o usuário altera a opção de um <select>.
+   * Lê em voz alta: "<rótulo>: <opção selecionada>"
+   */
+  function handleSelectChange(event) {
+    var select = event.target;
+    if (!select || select.tagName.toLowerCase() !== 'select') return;
+
+    var selectedOption = select.options[select.selectedIndex];
+    var selectedText = selectedOption ? selectedOption.text : '';
+    if (!selectedText) return;
+
+    var label = getAssociatedLabelText(select) ||
+                select.getAttribute('aria-label') ||
+                'opção selecionada';
+    speak(label + ': ' + selectedText);
+  }
+
   // ─── Síntese de voz ───────────────────────────────────────────────────────
 
   function speak(text) {
@@ -234,6 +323,12 @@
   document.addEventListener('mouseup', function () {
     lastSpokenElement = null;
   });
+
+  // Confirmação de campo ao sair (focus-out usa captura para pegar todos os inputs)
+  document.addEventListener('blur', handleInputBlur, true);
+
+  // Confirmação de seleção em <select>
+  document.addEventListener('change', handleSelectChange, true);
 
   console.info('[SistemaOuvir] Interface auditiva por toque ativada.');
 })();

@@ -11,6 +11,9 @@ Interface auditiva por toque em **Vanilla JS** — transforma qualquer site em u
 | **Detecção de elementos** | `touchmove` (mobile) + `mousemove` (desktop) com `document.elementFromPoint` |
 | **Leitura inteligente** | Prioridade: `aria-label` → `aria-labelledby` → `alt` (img) → `title` → texto interno |
 | **Suporte a formulários** | Lê `<input>`, `<select>` com seus `<label>` associados |
+| **Confirmação de campos** | Ao sair de um campo preenchido, lê o valor em voz alta: *"Nome completo: João Silva. Está correto?"* |
+| **Campos numéricos** | CPF, CNPJ, telefone e CEP têm cada dígito lido individualmente para fácil conferência |
+| **Confirmação de select** | Ao trocar de opção em `<select>`, anuncia imediatamente a opção escolhida |
 | **Síntese de voz** | Web Speech API (`window.speechSynthesis`), sem dependências externas |
 | **Debounce de 100 ms** | Só fala quando o elemento muda **e** o dedo para por ≥ 100 ms |
 | **Feedback visual** | Borda laranja temporária no elemento detectado |
@@ -20,25 +23,67 @@ Interface auditiva por toque em **Vanilla JS** — transforma qualquer site em u
 
 ## Como usar
 
-### 1. Adicionar ao HTML
+### 1. Adicionar a qualquer site (forma mais simples)
+
+Cole a tag `<script>` **antes do `</body>`** do seu HTML:
 
 ```html
-<!-- Antes do </body> -->
 <script src="sistemaOuvir.js"></script>
 ```
 
-### 2. Injetar via console (teste rápido)
+Se preferir hospedar o arquivo, faça o upload de `sistemaOuvir.js` para o servidor (ou CDN) e ajuste o caminho no `src`.
+
+### 2. Via CDN / URL pública (GitHub Pages, jsDelivr, etc.)
+
+Exemplo usando jsDelivr (substitua `SEU_USUARIO` pelo seu usuário do GitHub e `main` pelo nome da sua branch):
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/SEU_USUARIO/SistemaOuvir@main/sistemaOuvir.js"></script>
+```
+
+### 3. Injetar via console do navegador (teste sem alterar o código)
+
+> Substitua `SEU_USUARIO` pelo seu usuário do GitHub e `main` pelo nome da sua branch.
 
 ```js
-// Cole no console do DevTools:
 const s = document.createElement('script');
-s.src = 'sistemaOuvir.js';
+s.src = 'https://cdn.jsdelivr.net/gh/SEU_USUARIO/SistemaOuvir@main/sistemaOuvir.js';
 document.head.appendChild(s);
 ```
 
-### 3. Demo local
+### 4. Passo a passo para adicionar ao seu site
 
-Abra `demo.html` em qualquer navegador moderno e mova o mouse sobre os elementos.
+1. **Baixe** o arquivo `sistemaOuvir.js` deste repositório (botão *Code → Download ZIP* ou copie o conteúdo do arquivo).
+2. **Coloque** o arquivo na mesma pasta do seu `index.html` (ou em uma subpasta, ex.: `js/sistemaOuvir.js`).
+3. **Adicione** a linha abaixo antes do fechamento da tag `</body>` em todas as páginas que devem ter acessibilidade auditiva:
+   ```html
+   <script src="sistemaOuvir.js"></script>
+   ```
+4. **Abra** a página no navegador. O sistema já está ativo — nenhuma configuração adicional é necessária.
+5. **Teste:** passe o mouse (ou o dedo) sobre os elementos e preencha os campos do formulário.
+
+> ⚠️ **Atenção:** o Web Speech API requer **HTTPS** em produção (ou `localhost` para testes locais). Sites servidos via `http://` não conseguirão sintetizar voz.
+
+---
+
+## Confirmação de campos — como funciona
+
+Quando o usuário **preenche um campo e clica fora** (ou pressiona Tab), o SistemaOuvir:
+
+1. Detecta automaticamente o tipo do campo pelo `id`, `name`, `placeholder` ou `<label>` associado.
+2. Formata o valor conforme o tipo:
+   - **Nome, e-mail, texto livre:** lê o valor diretamente.
+   - **CPF, CNPJ, telefone, CEP:** lê cada dígito individualmente para facilitar a conferência.
+3. Anuncia: *"&lt;Rótulo do campo&gt;: &lt;valor&gt;. Está correto?"*
+
+Para que a detecção automática funcione, use palavras-chave nos atributos `id`, `name`, `placeholder` ou `<label>`:
+
+| Tipo detectado | Palavras-chave reconhecidas |
+|---|---|
+| CPF | `cpf` |
+| CNPJ | `cnpj` |
+| Telefone | `telefone`, `celular`, `whatsapp`, `fone`, `tel`, `phone` |
+| CEP | `cep` |
 
 ---
 
