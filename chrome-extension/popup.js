@@ -91,28 +91,28 @@
   langSelect.addEventListener('change', () => {
     const lang = langSelect.value;
     chrome.storage.sync.set({ lang });
-    sendToBackground({ type: 'updateConfig', tabId: currentTabId, config: { lang } }).catch(console.warn);
+    sendToBackground({ type: 'updateConfig', tabId: currentTabId, config: { lang } }).catch((err) => console.warn('[SistemaOuvir] Config update failed:', err));
   });
 
   rateRange.addEventListener('input', () => {
     const rate = parseFloat(rateRange.value);
     rateValue.textContent = rate.toFixed(1);
     chrome.storage.sync.set({ rate });
-    sendToBackground({ type: 'updateConfig', tabId: currentTabId, config: { rate } }).catch(console.warn);
+    sendToBackground({ type: 'updateConfig', tabId: currentTabId, config: { rate } }).catch((err) => console.warn('[SistemaOuvir] Config update failed:', err));
   });
 
   pitchRange.addEventListener('input', () => {
     const pitch = parseFloat(pitchRange.value);
     pitchValue.textContent = pitch.toFixed(1);
     chrome.storage.sync.set({ pitch });
-    sendToBackground({ type: 'updateConfig', tabId: currentTabId, config: { pitch } }).catch(console.warn);
+    sendToBackground({ type: 'updateConfig', tabId: currentTabId, config: { pitch } }).catch((err) => console.warn('[SistemaOuvir] Config update failed:', err));
   });
 
   debounceRange.addEventListener('input', () => {
     const debounce = parseInt(debounceRange.value, 10);
     debounceValue.textContent = debounce;
     chrome.storage.sync.set({ debounce });
-    sendToBackground({ type: 'updateConfig', tabId: currentTabId, config: { debounce } }).catch(console.warn);
+    sendToBackground({ type: 'updateConfig', tabId: currentTabId, config: { debounce } }).catch((err) => console.warn('[SistemaOuvir] Config update failed:', err));
   });
 
   // ─── Kick-off ─────────────────────────────────────────────────────────────

@@ -23,8 +23,11 @@ function setIcon(tabId, enabled) {
       48:  `icons/icon48_${suffix}.png`,
       128: `icons/icon128_${suffix}.png`
     }
-  }).catch(() => {
-    // Ignora erros quando a aba não existe mais
+  }).catch((err) => {
+    // Tabs that are closed or restricted (e.g. chrome://) will throw; ignore those.
+    if (err && err.message && !err.message.includes('No tab with id')) {
+      console.warn('[SistemaOuvir] setIcon failed:', err);
+    }
   });
 }
 

@@ -163,7 +163,7 @@
     var parentLabel = input.closest('label');
     if (parentLabel) {
       // evita incluir o valor do próprio input no texto do label
-      return parentLabel.cloneNode(true).querySelector('input,select,textarea') ?
+      return parentLabel.querySelector('input,select,textarea') ?
         Array.from(parentLabel.childNodes)
           .filter(function (n) { return n.nodeType === Node.TEXT_NODE; })
           .map(function (n) { return n.textContent.trim(); })
