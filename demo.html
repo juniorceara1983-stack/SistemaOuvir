@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SistemaOuvir – Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      color: #222;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 { color: #333; font-size: 1.6rem; }
+    h2 { color: #555; font-size: 1.1rem; margin-top: 2rem; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    button {
+      padding: 14px 10px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background: #4a90e2;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #357abd; }
+
+    a {
+      display: block;
+      padding: 14px 10px;
+      background: #fff;
+      border: 2px solid #4a90e2;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #4a90e2;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.12);
+      text-align: center;
+    }
+
+    .card img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #ddd;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+
+    .info-box {
+      background: #fffbe6;
+      border: 1px solid #f5c518;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 0.9rem;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🔊 SistemaOuvir – Demo</h1>
+  <p>Passe o mouse (ou o dedo em dispositivos touch) sobre os elementos abaixo.
+     O sistema lerá em voz alta o que está sendo tocado.</p>
+
+  <h2>Botões</h2>
+  <div class="grid">
+    <button>Início</button>
+    <button aria-label="Fechar janela">✕</button>
+    <button>Enviar formulário</button>
+    <button>Acessibilidade</button>
+  </div>
+
+  <h2>Links</h2>
+  <div class="grid">
+    <a href="#">Página inicial</a>
+    <a href="#" aria-label="Ir para o contato">📧 Contato</a>
+    <a href="#">Sobre nós</a>
+    <a href="#">Serviços</a>
+  </div>
+
+  <h2>Imagens</h2>
+  <div class="grid">
+    <div class="card">
+      <!-- SVG placeholder – não requer conexão externa -->
+      <img
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='100'%3E%3Crect width='200' height='100' fill='%234a90e2'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='14'%3ELogo%3C/text%3E%3C/svg%3E"
+        alt="Logo da empresa" />
+      <p>Logotipo</p>
+    </div>
+    <div class="card">
+      <img
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='100'%3E%3Crect width='200' height='100' fill='%2382c45f'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='14'%3ENature%3C/text%3E%3C/svg%3E"
+        alt="Fotografia de uma floresta verde ao amanhecer" />
+      <p>Natureza</p>
+    </div>
+    <div class="card">
+      <!-- Imagem decorativa sem alt útil -->
+      <img
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='100'%3E%3Crect width='200' height='100' fill='%23f5a623'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='14'%3EDecor%3C/text%3E%3C/svg%3E"
+        alt=""
+        role="presentation"
+        aria-hidden="true" />
+      <p>Decorativa (sem alt)</p>
+    </div>
+  </div>
+
+  <h2>Formulário</h2>
+  <div style="max-width:400px">
+    <label for="nome">Nome completo</label>
+    <input id="nome" type="text" placeholder="Digite seu nome" />
+
+    <label for="email" style="margin-top:12px; display:block">E-mail</label>
+    <input id="email" type="email" placeholder="seu@email.com" />
+
+    <label for="assunto" style="margin-top:12px; display:block">Assunto</label>
+    <select id="assunto">
+      <option>Suporte técnico</option>
+      <option>Dúvidas gerais</option>
+      <option>Sugestões</option>
+    </select>
+
+    <button style="margin-top:16px; width:100%" type="submit">Enviar mensagem</button>
+  </div>
+
+  <h2>Textos e headings</h2>
+  <h3>Título de Seção</h3>
+  <p>Este é um parágrafo de exemplo com texto informativo sobre o sistema SistemaOuvir.</p>
+
+  <div class="info-box">
+    <strong>ℹ️ Como testar:</strong> No desktop, mova o mouse lentamente sobre cada elemento
+    e espere 100 ms – o navegador lerá o elemento em voz alta.
+    No celular, arraste o dedo pela tela.
+    <br><br>
+    Certifique-se de que o volume do dispositivo está ativado e que o navegador
+    tem permissão para reproduzir áudio.
+  </div>
+
+  <!-- Injeta o SistemaOuvir -->
+  <script src="sistemaOuvir.js"></script>
+</body>
+</html>
