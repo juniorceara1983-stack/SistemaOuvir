@@ -38,12 +38,12 @@ function getTabEnabled(tabId) {
 
 // ─── Eventos de ciclo de vida ─────────────────────────────────────────────────
 
-// Quando a extensão é instalada ou atualizada, lê as configurações salvas
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.get(['enabled'], (stored) => {
-    // O padrão global é "desativado"; cada aba começa desligada
-    console.info('[SistemaOuvir background] Extensão instalada/atualizada.');
-  });
+// Quando a extensão é instalada pela primeira vez, abre a página de boas-vindas
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'install') {
+    chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
+  }
+  console.info('[+Voz] Extensão instalada/atualizada. Motivo:', details.reason);
 });
 
 // Limpa estado quando a aba é fechada
