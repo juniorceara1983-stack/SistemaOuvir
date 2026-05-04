@@ -19,6 +19,12 @@
   const debounceRange = document.getElementById('debounceRange');
   const debounceValue = document.getElementById('debounceValue');
 
+  // Agendamento
+  const alarmToggle    = document.getElementById('alarmToggle');
+  const alarmTime      = document.getElementById('alarmTime');
+  const alarmTimeGroup = document.getElementById('alarmTimeGroup');
+  const schedulerHint  = document.getElementById('schedulerHint');
+
   // ─── Estado local do popup ────────────────────────────────────────────────
 
   let currentTabId = null;
@@ -41,6 +47,36 @@
         }
       });
     });
+  }
+
+  const MS_PER_MINUTE = 60000;
+
+  /** Formata o horário local de disparo para exibição amigável */
+  function formatNextAlarmHint(timeStr) {
+    const [h, m] = timeStr.split(':').map(Number);
+    const now    = new Date();
+    const target = new Date();
+    target.setHours(h, m, 0, 0);
+    if (target <= now) target.setDate(target.getDate() + 1);
+
+    const diffMs  = target - now;
+    const diffMin = Math.round(diffMs / MS_PER_MINUTE);
+    const diffH   = Math.floor(diffMin / 60);
+    const restMin = diffMin % 60;
+
+    if (diffH > 0) return `Próximo disparo em ${diffH}h ${restMin}min`;
+    return `Próximo disparo em ${diffMin} min`;
+  }
+
+  function updateAlarmUI(enabled, timeStr) {
+    alarmToggle.checked = enabled;
+    alarmTimeGroup.classList.toggle('disabled', !enabled);
+    if (enabled && timeStr) {
+      alarmTime.value    = timeStr;
+      schedulerHint.textContent = formatNextAlarmHint(timeStr);
+    } else {
+      schedulerHint.textContent = '';
+    }
   }
 
   // ─── Inicialização ────────────────────────────────────────────────────────
@@ -73,6 +109,14 @@
       updateStatusUI(resp.enabled);
     } catch {
       updateStatusUI(stored.enabled || false);
+    }
+
+    // Carrega o estado do agendamento
+    try {
+      const alarmResp = await sendToBackground({ type: 'getAlarmState' });
+      updateAlarmUI(alarmResp.alarmEnabled, alarmResp.alarmTime);
+    } catch {
+      updateAlarmUI(false, '08:00');
     }
   }
 
@@ -113,6 +157,30 @@
     debounceValue.textContent = debounce;
     chrome.storage.sync.set({ debounce });
     sendToBackground({ type: 'updateConfig', tabId: currentTabId, config: { debounce } }).catch((err) => console.warn('[SistemaOuvir] Config update failed:', err));
+  });
+
+  // ─── Controles de agendamento ─────────────────────────────────────────────
+
+  alarmToggle.addEventListener('change', async () => {
+    const enabled = alarmToggle.checked;
+    const time    = alarmTime.value || '08:00';
+    updateAlarmUI(enabled, time);
+    try {
+      await sendToBackground({ type: 'setAlarm', enabled, time });
+    } catch (err) {
+      console.warn('[SistemaOuvir] Erro ao configurar alarme:', err);
+    }
+  });
+
+  alarmTime.addEventListener('change', async () => {
+    if (!alarmToggle.checked) return;
+    const time = alarmTime.value || '08:00';
+    schedulerHint.textContent = formatNextAlarmHint(time);
+    try {
+      await sendToBackground({ type: 'setAlarm', enabled: true, time });
+    } catch (err) {
+      console.warn('[SistemaOuvir] Erro ao atualizar horário do alarme:', err);
+    }
   });
 
   // ─── Kick-off ─────────────────────────────────────────────────────────────

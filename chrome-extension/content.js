@@ -246,6 +246,205 @@
     window.speechSynthesis.speak(utterance);
   }
 
+  // ─── Limpeza de texto (remove números de versículos) ─────────────────────
+
+  /**
+   * Remove números isolados (versículos) do texto para uma leitura fluida.
+   * Aplica a regex solicitada e normaliza espaços extras.
+   */
+  function cleanText(text) {
+    return text
+      .replace(/\s\d+\s/g, ' ')   // remove versículos no meio do texto
+      .replace(/^\d+\s/,    '')   // remove versículo no início
+      .replace(/\s\d+$/,    '')   // remove versículo no final
+      .replace(/\s+/g,      ' ')  // normaliza espaços múltiplos
+      .trim();
+  }
+
+  // ─── Canção Nova: leitura integral da Liturgia ────────────────────────────
+
+  var CANCAO_NOVA_HOST = 'cancaonova.com';
+
+  /** Verifica se a página atual é do domínio da Canção Nova */
+  function isCancaoNovaPage() {
+    var h = window.location.hostname;
+    return h === CANCAO_NOVA_HOST || h.endsWith('.' + CANCAO_NOVA_HOST);
+  }
+
+  /** Seletores da área principal de leitura, do mais específico ao mais geral */
+  var CONTENT_SELECTORS = [
+    '.liturgy-content',
+    '.post-content',
+    '.entry-content',
+    '.td-post-content',
+    'article .content',
+    'article',
+    '[role="main"]',
+    'main',
+    '#content',
+    '#main'
+  ];
+
+  function getMainContentArea() {
+    for (var i = 0; i < CONTENT_SELECTORS.length; i++) {
+      var el = document.querySelector(CONTENT_SELECTORS[i]);
+      if (el) return el;
+    }
+    return document.body;
+  }
+
+  /** Coleta e une todos os parágrafos da área principal, removendo versículos */
+  function collectLiturgyText() {
+    var area = getMainContentArea();
+    var paragraphs = Array.from(area.querySelectorAll('p'));
+    if (paragraphs.length === 0) return '';
+
+    var raw = paragraphs
+      .map(function (p) { return (p.innerText || p.textContent || '').trim(); })
+      .filter(function (t) { return t.length > 0; })
+      .join(' ');
+
+    return cleanText(raw);
+  }
+
+  /**
+   * Divide o texto em segmentos menores, respeitando pausas naturais,
+   * para evitar o limite de tamanho da Web Speech API.
+   */
+  function splitIntoChunks(text, maxLength) {
+    var chunks   = [];
+    var segments = text.match(/[^.!?;]+[.!?;]*/g) || [text];
+    var current  = '';
+
+    for (var i = 0; i < segments.length; i++) {
+      var seg       = segments[i].trim();
+      if (!seg) continue;
+      var candidate = current ? current + ' ' + seg : seg;
+      if (candidate.length <= maxLength || !current) {
+        current = candidate;
+      } else {
+        chunks.push(current);
+        current = seg;
+      }
+    }
+    if (current) chunks.push(current);
+    return chunks.length ? chunks : [text];
+  }
+
+  /** Maximum character length per speech chunk (avoids Web Speech API buffer limits) */
+  var MAX_CHUNK_LENGTH = 200;
+
+  var isPlayingLiturgy = false;
+
+  /** Inicia ou interrompe a narração integral da liturgia */
+  function speakLiturgy() {
+    if (!window.speechSynthesis) return;
+
+    if (isPlayingLiturgy) {
+      window.speechSynthesis.cancel();
+      isPlayingLiturgy = false;
+      updateLiturgyButton(false);
+      return;
+    }
+
+    var text = collectLiturgyText();
+    if (!text) {
+      speak('Nenhum texto de liturgia encontrado nesta página.');
+      return;
+    }
+
+    isPlayingLiturgy = true;
+    updateLiturgyButton(true);
+    window.speechSynthesis.cancel();
+
+    var chunks = splitIntoChunks(text, MAX_CHUNK_LENGTH);
+    var index  = 0;
+
+    function speakNext() {
+      if (!isPlayingLiturgy || index >= chunks.length) {
+        isPlayingLiturgy = false;
+        updateLiturgyButton(false);
+        return;
+      }
+      var utterance   = new SpeechSynthesisUtterance(chunks[index++]);
+      utterance.lang  = config.lang;
+      utterance.rate  = config.rate;
+      utterance.pitch = config.pitch;
+      utterance.onend = speakNext;
+      utterance.onerror = function () {
+        isPlayingLiturgy = false;
+        updateLiturgyButton(false);
+      };
+      window.speechSynthesis.speak(utterance);
+    }
+
+    speakNext();
+  }
+
+  function updateLiturgyButton(playing) {
+    var btn = document.getElementById('sistemaOuvir-liturgy-btn');
+    if (!btn) return;
+    if (playing) {
+      btn.textContent         = '⏹ Parar Leitura';
+      btn.style.background    = '#333';
+      btn.style.boxShadow     = '0 4px 16px rgba(0,0,0,0.35)';
+    } else {
+      btn.textContent         = '🔊 Ouvir Liturgia Completa';
+      btn.style.background    = '#FF6600';
+      btn.style.boxShadow     = '0 4px 16px rgba(0,0,0,0.25)';
+    }
+  }
+
+  /** Injeta o botão flutuante "Ouvir Liturgia Completa" na página */
+  function injectLiturgyButton() {
+    if (document.getElementById('sistemaOuvir-liturgy-btn')) return;
+
+    var btn = document.createElement('button');
+    btn.id  = 'sistemaOuvir-liturgy-btn';
+    btn.textContent = '🔊 Ouvir Liturgia Completa';
+    btn.setAttribute('aria-label', 'Ouvir a liturgia completa em voz alta');
+    btn.style.cssText = [
+      'position:fixed',
+      'bottom:24px',
+      'right:24px',
+      'z-index:2147483647',
+      'background:#FF6600',
+      'color:#fff',
+      'border:none',
+      'border-radius:50px',
+      'padding:12px 22px',
+      'font-size:15px',
+      'font-weight:700',
+      'cursor:pointer',
+      'box-shadow:0 4px 16px rgba(0,0,0,0.25)',
+      'transition:background 0.2s,transform 0.1s',
+      'font-family:Arial,sans-serif',
+      'line-height:1.4',
+      'letter-spacing:0.01em'
+    ].join(';');
+
+    btn.addEventListener('mouseenter', function () {
+      if (!isPlayingLiturgy) btn.style.background = '#e55a00';
+      btn.style.transform = 'scale(1.05)';
+    });
+    btn.addEventListener('mouseleave', function () {
+      if (!isPlayingLiturgy) btn.style.background = '#FF6600';
+      btn.style.transform = 'scale(1)';
+    });
+    btn.addEventListener('click', speakLiturgy);
+
+    document.body.appendChild(btn);
+  }
+
+  // Injeta o botão apenas no site da Canção Nova
+  if (isCancaoNovaPage()) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', injectLiturgyButton);
+    } else {
+      injectLiturgyButton();
+    }
+  }
+
   // ─── Lógica principal ─────────────────────────────────────────────────────
 
   function getRelevantElement(x, y) {
@@ -347,6 +546,11 @@
 
       case 'getState':
         sendResponse({ enabled: config.enabled, config: config });
+        break;
+
+      case 'readFullLiturgy':
+        speakLiturgy();
+        sendResponse({ ok: true });
         break;
     }
     return true; // keep channel open for async responses

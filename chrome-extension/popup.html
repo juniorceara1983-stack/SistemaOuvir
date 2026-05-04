@@ -75,6 +75,27 @@
     </div>
   </section>
 
+  <hr />
+
+  <section class="settings" id="scheduler-section">
+    <h2>Agendamento – Canção Nova</h2>
+
+    <div class="field-group scheduler-toggle-row">
+      <span class="scheduler-label">Abrir liturgia diariamente</span>
+      <label class="switch" aria-label="Ativar abertura automática da liturgia">
+        <input type="checkbox" id="alarmToggle" />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="field-group" id="alarmTimeGroup">
+      <label for="alarmTime">Horário de abertura</label>
+      <input type="time" id="alarmTime" value="08:00" />
+    </div>
+
+    <p class="scheduler-hint" id="schedulerHint" aria-live="polite"></p>
+  </section>
+
   <footer>
     <p>+Voz · Inclusão que se ouve · Web Speech API</p>
   </footer>
