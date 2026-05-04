@@ -87,12 +87,69 @@ Para que a detecção automática funcione, use palavras-chave nos atributos `id
 
 ---
 
+## Extensão para Chrome (Manifest V3)
+
+A pasta `chrome-extension/` contém uma extensão pronta que injeta o SistemaOuvir em **qualquer site** sem precisar alterar o código do site.
+
+### Estrutura
+
+```
+chrome-extension/
+├── manifest.json      # Manifest V3 – permissões: activeTab, storage, scripting
+├── content.js         # Lógica principal injetada em todas as páginas
+├── background.js      # Service worker – gerencia estado por aba e ícone
+├── popup.html         # Interface do popup com liga/desliga e configurações
+├── popup.css          # Estilos do popup
+├── popup.js           # Lógica do popup
+└── icons/             # Ícones 16 / 48 / 128 px (azul=padrão, verde=ativo, cinza=inativo)
+```
+
+### Como instalar (modo desenvolvedor)
+
+1. Abra o Chrome e acesse `chrome://extensions`.
+2. Ative o **Modo do desenvolvedor** (canto superior direito).
+3. Clique em **Carregar sem compactação** e selecione a pasta `chrome-extension/`.
+4. O ícone 🔊 aparecerá na barra de ferramentas.
+
+### Como usar
+
+- Clique no ícone para abrir o popup.
+- Use o **toggle** para ativar/desativar na aba atual.
+- Ajuste **velocidade**, **tom**, **idioma** e **delay** conforme necessário.
+- As configurações são salvas automaticamente em `chrome.storage.sync`.
+
+### Permissões utilizadas
+
+| Permissão | Motivo |
+|---|---|
+| `activeTab` | Permite interagir com a aba em foco |
+| `storage` | Persiste configurações (velocidade, idioma, etc.) entre sessões |
+| `scripting` | Injeta `content.js` dinamicamente quando necessário |
+| `<all_urls>` | Ativa o content script em qualquer domínio |
+
+---
+
+## API pública (sistemaOuvir.js)
+
+Quando o script é carregado diretamente em um site, ele expõe `window.SistemaOuvir`:
+
+```js
+SistemaOuvir.enable()              // ativa o sistema
+SistemaOuvir.disable()             // desativa o sistema
+SistemaOuvir.toggle()              // alterna ativo/inativo
+SistemaOuvir.isEnabled()           // retorna true/false
+SistemaOuvir.config({ rate: 1.2, pitch: 1, lang: 'pt-BR', debounce: 150 })
+```
+
+---
+
 ## Estrutura do repositório
 
 ```
 SistemaOuvir/
-├── sistemaOuvir.js   # Script principal (injete em qualquer site)
-├── demo.html         # Página de demonstração com todos os tipos de elemento
+├── sistemaOuvir.js          # Script principal (injete em qualquer site)
+├── demo.html                # Página de demonstração com todos os tipos de elemento
+├── chrome-extension/        # Extensão Chrome MV3 pronta para instalar
 └── README.md
 ```
 
