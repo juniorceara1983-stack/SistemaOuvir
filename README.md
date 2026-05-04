@@ -1,6 +1,8 @@
-# SistemaOuvir
+# +Voz – SistemaOuvir
 
 Interface auditiva por toque em **Vanilla JS** — transforma qualquer site em uma experiência acessível onde o usuário descobre elementos deslizando o dedo (ou o mouse) pela tela e ouve o nome/descrição de cada um em voz alta.
+
+**+Voz: Inclusão que se ouve.** 🔊
 
 ---
 
@@ -87,9 +89,9 @@ Para que a detecção automática funcione, use palavras-chave nos atributos `id
 
 ---
 
-## Extensão para Chrome (Manifest V3)
+## Extensão +Voz para Chrome (Manifest V3)
 
-A pasta `chrome-extension/` contém uma extensão pronta que injeta o SistemaOuvir em **qualquer site** sem precisar alterar o código do site.
+A pasta `chrome-extension/` contém a extensão **+Voz** pronta, que injeta o SistemaOuvir em **qualquer site** sem precisar alterar o código do site.
 
 ### Estrutura
 
@@ -97,11 +99,14 @@ A pasta `chrome-extension/` contém uma extensão pronta que injeta o SistemaOuv
 chrome-extension/
 ├── manifest.json      # Manifest V3 – permissões: activeTab, storage, scripting
 ├── content.js         # Lógica principal injetada em todas as páginas
-├── background.js      # Service worker – gerencia estado por aba e ícone
+├── background.js      # Service worker – gerencia estado por aba, ícone e boas-vindas
 ├── popup.html         # Interface do popup com liga/desliga e configurações
 ├── popup.css          # Estilos do popup
 ├── popup.js           # Lógica do popup
-└── icons/             # Ícones 16 / 48 / 128 px (azul=padrão, verde=ativo, cinza=inativo)
+├── welcome.html       # Página de boas-vindas (aberta automaticamente na 1ª instalação)
+├── welcome.css        # Estilos da página de boas-vindas
+├── widget.js          # Widget flutuante para sites de terceiros
+└── icons/             # Ícones 16 / 48 / 128 px (+Voz=padrão, on=ativo, off=inativo)
 ```
 
 ### Como instalar (modo desenvolvedor)
@@ -109,14 +114,14 @@ chrome-extension/
 1. Abra o Chrome e acesse `chrome://extensions`.
 2. Ative o **Modo do desenvolvedor** (canto superior direito).
 3. Clique em **Carregar sem compactação** e selecione a pasta `chrome-extension/`.
-4. O ícone 🔊 aparecerá na barra de ferramentas.
+4. O ícone **+Voz** aparecerá na barra de ferramentas.
+5. A **página de boas-vindas** abrirá automaticamente na primeira instalação.
 
-### Como usar
+### Como usar a extensão
 
-- Clique no ícone para abrir o popup.
-- Use o **toggle** para ativar/desativar na aba atual.
-- Ajuste **velocidade**, **tom**, **idioma** e **delay** conforme necessário.
-- As configurações são salvas automaticamente em `chrome.storage.sync`.
+1. **Ativar**: Clique no ícone +Voz na barra de ferramentas para abrir o popup e ligue o **toggle** na aba desejada.
+2. **Usar**: Deslize o mouse (ou o dedo, no mobile) sobre textos, botões, imagens e campos da página — o +Voz lerá a descrição de cada elemento em voz alta.
+3. **Ajustar**: No popup, use os controles de **velocidade**, **tom**, **idioma** e **delay** conforme necessário. As configurações são salvas automaticamente em `chrome.storage.sync`.
 
 ### Permissões utilizadas
 
@@ -126,6 +131,53 @@ chrome-extension/
 | `storage` | Persiste configurações (velocidade, idioma, etc.) entre sessões |
 | `scripting` | Injeta `content.js` dinamicamente quando necessário |
 | `<all_urls>` | Ativa o content script em qualquer domínio |
+
+---
+
+## Página de Boas-Vindas (Onboarding)
+
+Ao instalar a extensão pela **primeira vez**, a página `welcome.html` é aberta automaticamente, guiando o usuário em 3 passos simples:
+
+1. **Ative pelo ícone** da barra de ferramentas.
+2. **Deslize sobre os textos** para ouvir as descrições.
+3. **Ajuste a velocidade** no menu popup.
+
+A página inclui um botão **"🔊 Testar Agora"** que direciona para uma página de exemplo com formulários e textos para o usuário experimentar o +Voz imediatamente.
+
+> Para abrir a página de boas-vindas manualmente (após a instalação), navegue para:
+> ```
+> chrome-extension://<ID_DA_EXTENSÃO>/welcome.html
+> ```
+> O ID aparece em `chrome://extensions` após carregar a extensão.
+
+---
+
+## Widget Flutuante para Sites de Terceiros
+
+O arquivo `widget.js` injeta um **botão flutuante** no canto inferior direito de qualquer página, permitindo que usuários finais ativem/desativem o SistemaOuvir sem precisar da extensão Chrome.
+
+### Como usar o widget
+
+1. Adicione os dois scripts antes do `</body>` no seu HTML:
+
+```html
+<script src="sistemaOuvir.js"></script>
+<script src="widget.js"></script>
+```
+
+2. Ou usando CDN (substitua `SEU_USUARIO` e `main` pelo seu usuário GitHub e branch):
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/SEU_USUARIO/SistemaOuvir@main/sistemaOuvir.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/SEU_USUARIO/SistemaOuvir@main/chrome-extension/widget.js"></script>
+```
+
+### Comportamento do widget
+
+- Exibe um **círculo laranja** com o símbolo **+Voz** (branco) no canto inferior direito.
+- Ao passar o mouse, o botão se **expande suavemente** mostrando o texto "Acessibilidade Ativa".
+- Ao clicar, chama `window.SistemaOuvir.toggle()` e **muda de cor** (laranja → azul) para indicar que está ativo.
+- Totalmente acessível via teclado (`Tab` + `Enter`/`Space`) com foco visual visível.
 
 ---
 
@@ -149,7 +201,7 @@ SistemaOuvir.config({ rate: 1.2, pitch: 1, lang: 'pt-BR', debounce: 150 })
 SistemaOuvir/
 ├── sistemaOuvir.js          # Script principal (injete em qualquer site)
 ├── demo.html                # Página de demonstração com todos os tipos de elemento
-├── chrome-extension/        # Extensão Chrome MV3 pronta para instalar
+├── chrome-extension/        # Extensão +Voz para Chrome MV3 pronta para instalar
 └── README.md
 ```
 

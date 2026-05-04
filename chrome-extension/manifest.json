@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "SistemaOuvir",
-  "version": "1.0.0",
-  "description": "Interface auditiva por toque: lê em voz alta qualquer elemento de qualquer site ao passar o mouse ou o dedo pela tela.",
+  "name": "+Voz",
+  "version": "1.1.0",
+  "description": "Acessibilidade que se ouve: lê em voz alta qualquer elemento de qualquer site ao passar o mouse ou o dedo pela tela.",
   "homepage_url": "https://github.com/juniorceara1983-stack/SistemaOuvir",
 
   "icons": {
@@ -18,7 +18,7 @@
       "48":  "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "SistemaOuvir"
+    "default_title": "+Voz – Acessibilidade Auditiva"
   },
 
   "background": {

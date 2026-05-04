@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>+Voz – Bem-vindo!</title>
+  <link rel="stylesheet" href="welcome.css" />
+</head>
+<body>
+
+  <!-- ── Cabeçalho ──────────────────────────────────────────────────────── -->
+  <header class="hero">
+    <div class="hero-logo" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="30" fill="#1a73e8"/>
+        <!-- Plus sign -->
+        <rect x="10" y="28" width="18" height="8" rx="2" fill="#fff"/>
+        <rect x="28" y="28" width="8"  height="8" rx="2" fill="#fff"/>
+        <rect x="28" y="12" width="8" height="24" rx="2" fill="#fff"/>
+        <!-- Sound waves -->
+        <path d="M38 38 A10 10 0 0 0 38 26" stroke="#FF6600" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M43 43 A18 18 0 0 0 43 21" stroke="#FF6600" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M48 47 A25 25 0 0 0 48 17" stroke="#FF6600" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.7"/>
+      </svg>
+    </div>
+    <h1 class="hero-title">+Voz: Inclusão que se ouve</h1>
+    <p class="hero-subtitle">Sua extensão de acessibilidade auditiva está pronta! 🎉</p>
+  </header>
+
+  <!-- ── Como usar ──────────────────────────────────────────────────────── -->
+  <main>
+    <section class="steps" aria-labelledby="how-to-title">
+      <h2 id="how-to-title">Como usar em 3 passos simples</h2>
+
+      <ol class="steps-list">
+        <li class="step">
+          <div class="step-number" aria-hidden="true">1</div>
+          <div class="step-content">
+            <h3>Ative pelo ícone da barra</h3>
+            <p>Clique no ícone <strong>+Voz</strong> na barra de ferramentas do navegador e ligue o botão para ativar a acessibilidade na aba atual.</p>
+          </div>
+          <div class="step-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="30" fill="#e8f0fe"/>
+              <rect x="20" y="28" width="24" height="8" rx="12" fill="#1a73e8"/>
+              <circle cx="44" cy="32" r="8" fill="#1a73e8"/>
+            </svg>
+          </div>
+        </li>
+
+        <li class="step">
+          <div class="step-number" aria-hidden="true">2</div>
+          <div class="step-content">
+            <h3>Deslize sobre os textos</h3>
+            <p>Mova o mouse (ou o dedo, no celular) sobre qualquer elemento da página — textos, botões, imagens, campos — e ouça a descrição em voz alta.</p>
+          </div>
+          <div class="step-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="30" fill="#fff3e8"/>
+              <path d="M28 16 L28 40 L36 32 L44 48" stroke="#FF6600" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="28" cy="14" r="4" fill="#FF6600"/>
+            </svg>
+          </div>
+        </li>
+
+        <li class="step">
+          <div class="step-number" aria-hidden="true">3</div>
+          <div class="step-content">
+            <h3>Ajuste a velocidade no menu</h3>
+            <p>Abra o popup do +Voz e use os controles para ajustar velocidade, tom e idioma da voz conforme sua preferência.</p>
+          </div>
+          <div class="step-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="30" fill="#e8f0fe"/>
+              <rect x="16" y="20" width="32" height="4" rx="2" fill="#ccc"/>
+              <circle cx="28" cy="22" r="5" fill="#1a73e8"/>
+              <rect x="16" y="30" width="32" height="4" rx="2" fill="#ccc"/>
+              <circle cx="40" cy="32" r="5" fill="#1a73e8"/>
+              <rect x="16" y="40" width="32" height="4" rx="2" fill="#ccc"/>
+              <circle cx="24" cy="42" r="5" fill="#1a73e8"/>
+            </svg>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ── Botão Testar Agora ─────────────────────────────────────────── -->
+    <section class="cta" aria-label="Teste a extensão agora">
+      <a
+        href="https://github.com/juniorceara1983-stack/SistemaOuvir/blob/main/demo.html"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn-test"
+      >
+        🔊 Testar Agora
+      </a>
+      <p class="cta-hint">Abrirá a página de demonstração do +Voz com formulários e textos para você testar.</p>
+    </section>
+
+    <!-- ── Dica rápida ───────────────────────────────────────────────── -->
+    <section class="tip-box" aria-label="Dica de acessibilidade">
+      <span class="tip-icon" aria-hidden="true">💡</span>
+      <div>
+        <strong>Dica:</strong> O +Voz funciona melhor em páginas com
+        <em>rótulos ARIA</em> (<code>aria-label</code>) e atributos <code>alt</code>
+        nas imagens. Quanto mais semântico o HTML, melhor a experiência auditiva!
+      </div>
+    </section>
+  </main>
+
+  <!-- ── Rodapé ────────────────────────────────────────────────────────── -->
+  <footer class="page-footer">
+    <p>+Voz · Inclusão que se ouve · <a href="https://github.com/juniorceara1983-stack/SistemaOuvir" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+  </footer>
+
+</body>
+</html>
