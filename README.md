@@ -89,6 +89,79 @@ Para que a detecção automática funcione, use palavras-chave nos atributos `id
 
 ---
 
+## Leitor Integral da Liturgia – Canção Nova
+
+O +Voz possui suporte especial para o site **liturgia.cancaonova.com**:
+
+### Botão "🔊 Ouvir Liturgia Completa"
+
+Ao visitar qualquer página em `cancaonova.com`, um botão flutuante laranja aparece no canto inferior direito. Ele:
+
+1. **Coleta automaticamente** todos os parágrafos da área principal de leitura.
+2. **Remove os números de versículos** com a função `cleanText()` (`text.replace(/\s\d+\s/g, ' ')`), tornando a narração fluida.
+3. **Narra o texto integralmente** usando a velocidade e o tom configurados no popup.
+4. Clique novamente no botão (**⏹ Parar Leitura**) para interromper a narração.
+
+---
+
+## Agendamento Automático – Liturgia Diária
+
+### O que é
+
+A extensão pode **abrir sozinha** o site da liturgia em um horário configurado por você, sem precisar de servidor, VPS ou qualquer serviço externo — tudo funciona 100% dentro do Chrome.
+
+### Como configurar (passo a passo)
+
+**Pré-requisito:** a extensão +Voz deve estar instalada e o Chrome deve estar **aberto e em execução** no horário agendado (o navegador não precisa estar em uma janela visível — pode estar minimizado).
+
+1. **Abra o popup** da extensão clicando no ícone +Voz na barra de ferramentas.
+2. Role até a seção **"Agendamento – Canção Nova"**.
+3. Defina o **horário desejado** no campo de hora (ex: `06:00` para as 6 da manhã).
+4. Ative o **toggle "Abrir liturgia diariamente"**.
+5. O popup mostrará uma confirmação: *"Próximo disparo em X horas"*.
+6. **Pronto.** No horário agendado, o Chrome abrirá automaticamente a página `https://liturgia.cancaonova.com/` e iniciará a leitura completa em voz alta.
+
+### Como funciona por dentro
+
+| Componente | Responsabilidade |
+|---|---|
+| `chrome.alarms` | API nativa do Chrome — dispara no horário certo, mesmo com a aba fechada |
+| `background.js` | Escuta o alarme, abre a aba da Canção Nova e aguarda o carregamento |
+| `content.js` | Recebe a mensagem `readFullLiturgy` e inicia a narração integral |
+| `popup.js` | Salva o horário em `chrome.storage.sync` e envia `setAlarm` ao background |
+
+### Requisitos para o funcionamento automático
+
+- O **Chrome precisa estar em execução** no horário agendado.  
+- O computador **não pode estar em modo de suspensão profunda** (o Chrome precisa estar ativo).
+- Recomendamos manter o Chrome **aberto (pode ser minimizado)** durante a noite se quiser ativação matinal.
+
+### Integração com o alarme do celular (Android / iOS)
+
+O `chrome.alarms` é uma API de extensão do Chrome para **desktop**. Para acionar a leitura da liturgia **a partir do celular**, siga as opções abaixo:
+
+#### Opção A — Android com Tasker (avançado)
+
+1. Instale o aplicativo **Tasker** na Play Store.
+2. Crie um **Perfil** com o gatilho **"Hora"** no horário desejado.
+3. Na ação, use **"Abrir URL"** ou **"Navegador"** com a URL `https://liturgia.cancaonova.com/`.
+4. O Chrome Mobile abrirá o site automaticamente — toque no botão **🔊 Ouvir Liturgia Completa** para iniciar a narração.
+
+#### Opção B — iOS com Atalhos (Shortcuts)
+
+1. Abra o app **Atalhos** no iPhone/iPad.
+2. Crie um novo atalho com a ação **"Abrir URLs"** e insira `https://liturgia.cancaonova.com/`.
+3. Toque em **"Automação"** → **"Criar Automação Pessoal"**.
+4. Escolha **"Alarme"** como gatilho e selecione o horário.
+5. Adicione o atalho criado como ação e confirme **"Executar Sem Perguntar"**.
+6. O Safari abrirá o site no horário do alarme.
+
+#### Opção C — Alarm + URL (Android, mais simples)
+
+Alguns aplicativos de alarme como **Alarmy** ou **Alarm Clock Xtreme** permitem abrir um URL diretamente ao tocar o alarme — configure o URL `https://liturgia.cancaonova.com/` como ação pós-alarme.
+
+---
+
 ## Extensão +Voz para Chrome (Manifest V3)
 
 A pasta `chrome-extension/` contém a extensão **+Voz** pronta, que injeta o SistemaOuvir em **qualquer site** sem precisar alterar o código do site.
@@ -97,10 +170,10 @@ A pasta `chrome-extension/` contém a extensão **+Voz** pronta, que injeta o Si
 
 ```
 chrome-extension/
-├── manifest.json      # Manifest V3 – permissões: activeTab, storage, scripting
-├── content.js         # Lógica principal injetada em todas as páginas
-├── background.js      # Service worker – gerencia estado por aba, ícone e boas-vindas
-├── popup.html         # Interface do popup com liga/desliga e configurações
+├── manifest.json      # Manifest V3 – permissões: activeTab, storage, scripting, alarms
+├── content.js         # Lógica principal injetada em todas as páginas + leitor da Canção Nova
+├── background.js      # Service worker – gerencia estado por aba, ícone, boas-vindas e alarme diário
+├── popup.html         # Interface do popup com liga/desliga, configurações e agendamento
 ├── popup.css          # Estilos do popup
 ├── popup.js           # Lógica do popup
 ├── welcome.html       # Página de boas-vindas (aberta automaticamente na 1ª instalação)
@@ -128,8 +201,9 @@ chrome-extension/
 | Permissão | Motivo |
 |---|---|
 | `activeTab` | Permite interagir com a aba em foco |
-| `storage` | Persiste configurações (velocidade, idioma, etc.) entre sessões |
+| `storage` | Persiste configurações (velocidade, idioma, horário de alarme, etc.) entre sessões |
 | `scripting` | Injeta `content.js` dinamicamente quando necessário |
+| `alarms` | Agenda a abertura automática diária da liturgia |
 | `<all_urls>` | Ativa o content script em qualquer domínio |
 
 ---
