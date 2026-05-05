@@ -344,21 +344,25 @@
       _updateVoiceIndicator(false);
       var transcript = event.results[0][0].transcript.trim();
 
-      // Procura o campo de busca pelos seletores mais comuns
+      // Procura o campo de busca pelos seletores mais comuns (query única)
       var searchInput =
         document.getElementById('search-input') ||
-        document.querySelector('input[type="search"]') ||
-        document.querySelector('input[name="search"]') ||
-        document.querySelector('input[name="q"]') ||
-        document.querySelector('input[placeholder*="busca" i]') ||
-        document.querySelector('input[placeholder*="pesquisa" i]') ||
-        document.querySelector('input[placeholder*="search" i]');
+        document.querySelector([
+          'input[type="search"]',
+          'input[name="search"]',
+          'input[name="q"]',
+          'input[placeholder*="busca" i]',
+          'input[placeholder*="pesquisa" i]',
+          'input[placeholder*="search" i]'
+        ].join(','));
 
       if (searchInput) {
         searchInput.value = transcript;
         searchInput.dispatchEvent(new Event('input',  { bubbles: true }));
         searchInput.dispatchEvent(new Event('change', { bubbles: true }));
 
+        // Usa dispatchEvent (não form.submit()) para que frameworks SPA
+        // (React, Vue, etc.) possam interceptar e validar o evento.
         var form = searchInput.closest('form');
         if (form) {
           form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
