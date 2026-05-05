@@ -190,6 +190,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       break;
     }
 
+    // Popup quer activar a busca por voz na aba activa
+    case 'activateVoiceSearch': {
+      if (!tabId) { sendResponse({ error: 'tabId ausente' }); break; }
+      chrome.tabs.sendMessage(tabId, { type: 'activateVoiceSearch' }, () => {
+        if (chrome.runtime.lastError) {
+          console.warn('[SistemaOuvir] Não foi possível ativar busca por voz:', chrome.runtime.lastError.message);
+        }
+      });
+      sendResponse({ ok: true });
+      break;
+    }
+
     // Popup quer atualizar configurações (rate, pitch, lang, debounce)
     case 'updateConfig': {
       if (!tabId) { sendResponse({ error: 'tabId ausente' }); break; }

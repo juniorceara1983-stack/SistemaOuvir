@@ -295,6 +295,122 @@
     window.speechSynthesis.speak(utterance);
   }
 
+  // ─── Reconhecimento de Voz (Speech-to-Text) ──────────────────────────────
+
+  var voiceRecognition = null;
+  var isListening      = false;
+
+  /**
+   * Ativa a busca por voz: dá feedback auditivo e inicia o reconhecimento.
+   * Compatível com SpeechRecognition e webkitSpeechRecognition.
+   * Ao concluir, insere o texto no campo de busca e submete o formulário.
+   */
+  function ativarBuscaPorVoz() {
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      speak('Reconhecimento de voz não disponível neste navegador.');
+      return;
+    }
+
+    // Se já está a ouvir, cancela
+    if (isListening) {
+      if (voiceRecognition) voiceRecognition.abort();
+      return;
+    }
+
+    // Feedback auditivo antes de iniciar o microfone
+    window.speechSynthesis.cancel();
+    var utterance   = new SpeechSynthesisUtterance('Pode falar o que deseja procurar');
+    utterance.lang  = config.lang;
+    utterance.rate  = config.rate;
+    utterance.pitch = config.pitch;
+    utterance.onend = _startRecognition;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function _startRecognition() {
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    voiceRecognition                 = new SpeechRecognition();
+    voiceRecognition.lang            = config.lang || 'pt-BR';
+    voiceRecognition.continuous      = false;
+    voiceRecognition.interimResults  = false;
+    voiceRecognition.maxAlternatives = 1;
+
+    isListening = true;
+    _updateVoiceIndicator(true);
+
+    voiceRecognition.onresult = function (event) {
+      isListening = false;
+      _updateVoiceIndicator(false);
+      var transcript = event.results[0][0].transcript.trim();
+
+      // Procura o campo de busca pelos seletores mais comuns (query única)
+      var searchInput =
+        document.getElementById('search-input') ||
+        document.querySelector([
+          'input[type="search"]',
+          'input[name="search"]',
+          'input[name="q"]',
+          'input[placeholder*="busca" i]',
+          'input[placeholder*="pesquisa" i]',
+          'input[placeholder*="search" i]'
+        ].join(','));
+
+      if (searchInput) {
+        searchInput.value = transcript;
+        searchInput.dispatchEvent(new Event('input',  { bubbles: true }));
+        searchInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+        // Usa dispatchEvent (não form.submit()) para que frameworks SPA
+        // (React, Vue, etc.) possam interceptar e validar o evento.
+        var form = searchInput.closest('form');
+        if (form) {
+          form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        }
+      }
+
+      speak('Procurando por: ' + transcript);
+    };
+
+    voiceRecognition.onerror = function (event) {
+      isListening = false;
+      _updateVoiceIndicator(false);
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        speak('Microfone não autorizado. Por favor, permita o acesso ao microfone.');
+      } else {
+        speak('Não consegui ouvir, tente novamente.');
+      }
+    };
+
+    voiceRecognition.onend = function () {
+      isListening = false;
+      _updateVoiceIndicator(false);
+    };
+
+    try {
+      voiceRecognition.start();
+    } catch (e) {
+      isListening = false;
+      _updateVoiceIndicator(false);
+      speak('Não consegui ouvir, tente novamente.');
+    }
+  }
+
+  /** Atualiza o indicador visual do botão de microfone, se injectado */
+  function _updateVoiceIndicator(listening) {
+    var btn = document.getElementById('sistemaOuvir-mic-btn');
+    if (!btn) return;
+    if (listening) {
+      btn.textContent      = '🔴 A ouvir…';
+      btn.style.background = 'linear-gradient(135deg,#d32f2f,#FF6600)';
+      btn.style.animation  = 'sistemaOuvir-pulse 1.2s ease-in-out infinite';
+    } else {
+      btn.textContent      = '🎤 Busca por Voz';
+      btn.style.background = 'linear-gradient(135deg,#1a73e8,#FF6600)';
+      btn.style.animation  = 'none';
+    }
+  }
+
   // ─── Lógica principal ─────────────────────────────────────────────────────
 
   /**
@@ -394,6 +510,13 @@
       config.enabled ? this.disable() : this.enable();
     },
     isEnabled: function () { return config.enabled; },
+    /**
+     * Ativa a busca por voz: anuncia "Pode falar o que deseja procurar",
+     * ouve o utilizador e insere o texto no campo de pesquisa da página.
+     */
+    ativarBuscaPorVoz: function () {
+      ativarBuscaPorVoz();
+    },
     /**
      * Ajusta configurações em tempo de execução.
      * @param {Object} opts - { rate, pitch, lang, debounce, outlineDuration }

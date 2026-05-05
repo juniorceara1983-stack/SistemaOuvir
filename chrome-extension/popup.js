@@ -18,6 +18,7 @@
   const pitchValue    = document.getElementById('pitchValue');
   const debounceRange = document.getElementById('debounceRange');
   const debounceValue = document.getElementById('debounceValue');
+  const voiceSearchBtn = document.getElementById('voiceSearchBtn');
 
   // Agendamento
   const alarmToggle    = document.getElementById('alarmToggle');
@@ -157,6 +158,18 @@
     debounceValue.textContent = debounce;
     chrome.storage.sync.set({ debounce });
     sendToBackground({ type: 'updateConfig', tabId: currentTabId, config: { debounce } }).catch((err) => console.warn('[SistemaOuvir] Config update failed:', err));
+  });
+
+  // ─── Busca por Voz ────────────────────────────────────────────────────────
+
+  voiceSearchBtn.addEventListener('click', async () => {
+    try {
+      await sendToBackground({ type: 'activateVoiceSearch', tabId: currentTabId });
+      // Fecha o popup para que o utilizador possa falar sem sobreposição
+      window.close();
+    } catch (err) {
+      console.warn('[SistemaOuvir] Erro ao ativar busca por voz:', err);
+    }
   });
 
   // ─── Controles de agendamento ─────────────────────────────────────────────
