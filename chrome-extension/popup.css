@@ -177,9 +177,37 @@ input[type="time"] {
   pointer-events: none;
 }
 
+/* ─── Voice Search Button ────────────────────────────────────────────────── */
+.voice-search-hint {
+  font-size: 0.82rem;
+  color: #555;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.btn-voice-search {
+  width: 100%;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #1a73e8, #FF6600);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  font-family: Arial, sans-serif;
+  letter-spacing: 0.01em;
+}
+
+.btn-voice-search:hover  { opacity: 0.88; transform: scale(1.02); }
+.btn-voice-search:active { transform: scale(0.98); }
+
+/* ─── Scheduler hint ─────────────────────────────────────────────────────── */
 .scheduler-hint {
   font-size: 0.75rem;
   color: #1a73e8;
   min-height: 1.2em;
   margin-top: 2px;
 }
+

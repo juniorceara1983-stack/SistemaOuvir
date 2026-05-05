@@ -261,6 +261,186 @@
       .trim();
   }
 
+  // ─── Reconhecimento de Voz (Speech-to-Text) ──────────────────────────────
+
+  var voiceRecognition = null;
+  var isListening      = false;
+
+  /**
+   * Ativa a busca por voz: dá feedback auditivo e inicia o reconhecimento.
+   * Compatível com SpeechRecognition e webkitSpeechRecognition.
+   */
+  function ativarBuscaPorVoz() {
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      speak('Reconhecimento de voz não disponível neste navegador.');
+      return;
+    }
+
+    // Se já está a ouvir, cancela
+    if (isListening) {
+      if (voiceRecognition) voiceRecognition.abort();
+      return;
+    }
+
+    // Feedback auditivo antes de iniciar o microfone
+    window.speechSynthesis.cancel();
+    var utterance   = new SpeechSynthesisUtterance('Pode falar o que deseja procurar');
+    utterance.lang  = config.lang;
+    utterance.rate  = config.rate;
+    utterance.pitch = config.pitch;
+    utterance.onend = startRecognition;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function startRecognition() {
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    voiceRecognition                 = new SpeechRecognition();
+    voiceRecognition.lang            = config.lang || 'pt-BR';
+    voiceRecognition.continuous      = false;
+    voiceRecognition.interimResults  = false;
+    voiceRecognition.maxAlternatives = 1;
+
+    isListening = true;
+    updateMicButton(true);
+
+    voiceRecognition.onresult = function (event) {
+      isListening = false;
+      updateMicButton(false);
+      var transcript = event.results[0][0].transcript.trim();
+
+      // Procura o campo de busca pelos seletores mais comuns
+      var searchInput =
+        document.getElementById('search-input') ||
+        document.querySelector('input[type="search"]') ||
+        document.querySelector('input[name="search"]') ||
+        document.querySelector('input[name="q"]') ||
+        document.querySelector('input[placeholder*="busca" i]') ||
+        document.querySelector('input[placeholder*="pesquisa" i]') ||
+        document.querySelector('input[placeholder*="search" i]');
+
+      if (searchInput) {
+        searchInput.value = transcript;
+        searchInput.dispatchEvent(new Event('input',  { bubbles: true }));
+        searchInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+        // Dispara o submit do formulário pai, se existir
+        var form = searchInput.closest('form');
+        if (form) {
+          form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        }
+      }
+
+      speak('Procurando por: ' + transcript);
+    };
+
+    voiceRecognition.onerror = function (event) {
+      isListening = false;
+      updateMicButton(false);
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        speak('Microfone não autorizado. Por favor, permita o acesso ao microfone.');
+      } else {
+        speak('Não consegui ouvir, tente novamente.');
+      }
+    };
+
+    voiceRecognition.onend = function () {
+      isListening = false;
+      updateMicButton(false);
+    };
+
+    try {
+      voiceRecognition.start();
+    } catch (e) {
+      isListening = false;
+      updateMicButton(false);
+      speak('Não consegui ouvir, tente novamente.');
+    }
+  }
+
+  function updateMicButton(listening) {
+    var btn = document.getElementById('sistemaOuvir-mic-btn');
+    if (!btn) return;
+    if (listening) {
+      btn.textContent     = '🔴 A ouvir…';
+      btn.style.background = 'linear-gradient(135deg,#d32f2f,#FF6600)';
+      btn.style.animation  = 'sistemaOuvir-pulse 1.2s ease-in-out infinite';
+    } else {
+      btn.textContent     = '🎤 Busca por Voz';
+      btn.style.background = 'linear-gradient(135deg,#1a73e8,#FF6600)';
+      btn.style.animation  = 'none';
+    }
+  }
+
+  /** Injeta os keyframes de animação para o botão de microfone */
+  function injectMicStyles() {
+    if (document.getElementById('sistemaOuvir-mic-styles')) return;
+    var style       = document.createElement('style');
+    style.id        = 'sistemaOuvir-mic-styles';
+    style.textContent = [
+      '@keyframes sistemaOuvir-pulse {',
+      '  0%,100% { box-shadow:0 4px 16px rgba(26,115,232,0.5); transform:scale(1); }',
+      '  50%      { box-shadow:0 4px 24px rgba(255,102,0,0.7);  transform:scale(1.08); }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(style);
+  }
+
+  /** Injeta o botão flutuante de busca por voz */
+  function injectMicButton() {
+    if (document.getElementById('sistemaOuvir-mic-btn')) return;
+    injectMicStyles();
+
+    var btn = document.createElement('button');
+    btn.id  = 'sistemaOuvir-mic-btn';
+    btn.textContent = '🎤 Busca por Voz';
+    btn.setAttribute('aria-label', 'Ativar busca por voz');
+    btn.setAttribute('type', 'button');
+    btn.style.cssText = [
+      'position:fixed',
+      'bottom:80px',
+      'right:24px',
+      'z-index:2147483647',
+      'background:linear-gradient(135deg,#1a73e8,#FF6600)',
+      'color:#fff',
+      'border:none',
+      'border-radius:50px',
+      'padding:12px 22px',
+      'font-size:15px',
+      'font-weight:700',
+      'cursor:pointer',
+      'box-shadow:0 4px 16px rgba(0,0,0,0.25)',
+      'transition:opacity 0.2s,transform 0.1s',
+      'font-family:Arial,sans-serif',
+      'line-height:1.4',
+      'letter-spacing:0.01em'
+    ].join(';');
+
+    btn.addEventListener('mouseenter', function () {
+      if (!isListening) btn.style.opacity = '0.9';
+      btn.style.transform = 'scale(1.05)';
+    });
+    btn.addEventListener('mouseleave', function () {
+      btn.style.opacity   = '1';
+      btn.style.transform = 'scale(1)';
+    });
+    btn.addEventListener('click', ativarBuscaPorVoz);
+
+    document.body.appendChild(btn);
+  }
+
+  /** Remove o botão flutuante de microfone e para o reconhecimento em curso */
+  function removeMicButton() {
+    var btn = document.getElementById('sistemaOuvir-mic-btn');
+    if (btn) btn.remove();
+    var style = document.getElementById('sistemaOuvir-mic-styles');
+    if (style) style.remove();
+    if (isListening && voiceRecognition) {
+      voiceRecognition.abort();
+      isListening = false;
+    }
+  }
+
   // ─── Canção Nova: leitura integral da Liturgia ────────────────────────────
 
   var CANCAO_NOVA_HOST = 'cancaonova.com';
@@ -518,15 +698,19 @@
     switch (message.type) {
       case 'toggle':
         config.enabled = !config.enabled;
-        if (!config.enabled) {
+        if (config.enabled) {
+          injectMicButton();
+        } else {
           window.speechSynthesis && window.speechSynthesis.cancel();
           removeOutline();
+          removeMicButton();
         }
         sendResponse({ enabled: config.enabled });
         break;
 
       case 'enable':
         config.enabled = true;
+        injectMicButton();
         sendResponse({ enabled: true });
         break;
 
@@ -534,7 +718,13 @@
         config.enabled = false;
         window.speechSynthesis && window.speechSynthesis.cancel();
         removeOutline();
+        removeMicButton();
         sendResponse({ enabled: false });
+        break;
+
+      case 'activateVoiceSearch':
+        ativarBuscaPorVoz();
+        sendResponse({ ok: true });
         break;
 
       case 'updateConfig':
@@ -564,6 +754,9 @@
     if (stored.pitch    !== undefined) config.pitch           = stored.pitch;
     if (stored.lang     !== undefined) config.lang            = stored.lang;
     if (stored.debounce !== undefined) config.debounceDelay   = stored.debounce;
+
+    // Injeta o botão de microfone se a extensão já estava activa
+    if (config.enabled) injectMicButton();
   });
 
 })();
